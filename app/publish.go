@@ -13,6 +13,8 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	gitHttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-resty/resty/v2"
 	"github.com/labstack/echo/v4"
 )
@@ -99,9 +101,28 @@ func onPublish(c echo.Context) error {
 	}
 
 	status, err := w.Status()
+	fmt.Println(status)
+
+	checkError(err, "")
+	commit, err := w.Commit("updated i18n", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "Sungryeol Park",
+			Email: "sungryeolp@gmail.com",
+			When:  time.Now(),
+		},
+	})
 	checkError(err, "")
 
-	fmt.Println(status)
+	commitObj, err := gitClient.CommitObject(commit)
+	fmt.Print(commitObj)
+	checkError(err, "")
+	err = gitClient.Push(&git.PushOptions{
+		Auth: &gitHttp.BasicAuth{
+			Username: os.Getenv("GIT_USER"),
+			Password: os.Getenv("GIT_PASS"),
+		},
+	})
+	checkError(err, "")
 
 	return c.String(http.StatusOK, "publish webhook accepted!")
 }
