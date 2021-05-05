@@ -86,16 +86,17 @@ func onPublish(c echo.Context) error {
 
 	branchName := plumbing.ReferenceName(fmt.Sprintf("refs/heads/lang-%d", time.Now().Unix()))
 
-	headRef, err := gitClient.Head()
-	checkError(err, "")
-	ref := plumbing.NewHashReference(branchName, headRef.Hash())
-	err = gitClient.Storer.SetReference((ref))
-	checkError(err, "")
+	// headRef, err := gitClient.Head()
+	// checkError(err, "")
+	// ref := plumbing.NewHashReference(branchName, headRef.Hash())
+	// err = gitClient.Storer.SetReference((ref))
+	// checkError(err, "")
 
 	w, err := gitClient.Worktree()
 	checkError(err, "")
 	err = w.Checkout(&git.CheckoutOptions{
-		Hash: ref.Hash(),
+		Create: true,
+		Branch: branchName,
 	})
 	checkError(err, "")
 	for _, lang := range defaultLangs {
@@ -128,6 +129,8 @@ func onPublish(c echo.Context) error {
 		},
 	})
 	checkError(err, "")
+
+	fmt.Println("successfully pushed to new branch")
 
 	return c.String(http.StatusOK, "publish webhook accepted!")
 }
