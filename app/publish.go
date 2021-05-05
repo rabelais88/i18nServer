@@ -94,9 +94,14 @@ func onPublish(c echo.Context) error {
 
 	w, err := gitClient.Worktree()
 	checkError(err, "")
+	err = w.Checkout(&git.CheckoutOptions{
+		Hash: ref.Hash(),
+	})
+	checkError(err, "")
 	for _, lang := range defaultLangs {
-		langPath := fmt.Sprintf("%s/src/i18n/%s.json", gitPath, lang)
+		langPath := fmt.Sprintf("src/i18n/%s.json", lang)
 		_, err = w.Add(langPath)
+		log.Print("adding files to worktree for commit---", langPath)
 		checkError(err, "")
 	}
 
